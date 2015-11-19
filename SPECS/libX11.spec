@@ -4,8 +4,8 @@
 
 Summary: Core X11 protocol client library
 Name: libX11
-Version: 1.6.0
-Release: 2.1%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
+Version: 1.6.3
+Release: 2%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.x.org
@@ -19,14 +19,17 @@ Source0: http://xorg.freedesktop.org/archive/individual/lib/%{name}-%{version}.t
 %endif
 
 Patch2: dont-forward-keycode-0.patch
+Patch3: libX11-fix-for-Xlib-32-bit-request-number-issues.patch
+
 BuildRequires: xorg-x11-util-macros >= 1.11
 BuildRequires: pkgconfig(xproto) >= 7.0.15
 BuildRequires: xorg-x11-xtrans-devel >= 1.0.3-4
-BuildRequires: libxcb-devel >= 1.2
+BuildRequires: libxcb-devel >= 1.11-4
 BuildRequires: pkgconfig(xau) pkgconfig(xdmcp)
 BuildRequires: perl(Pod::Usage)
 
-Requires: %{name}-common = %{version}-%{release}
+Requires: %{name}-common >= %{version}-%{release}
+Conflicts: libxcb < 1.11-4
 
 %description
 Core X11 protocol client library.
@@ -50,6 +53,7 @@ X.Org X11 libX11 development package
 %prep
 %setup -q -n %{tarball}-%{?gitdate:%{gitdate}}%{!?gitdate:%{version}}
 %patch2 -p1 -b .dont-forward-keycode-0
+%patch3 -p1 -b .64bit-seqno
 
 %build
 # sodding libtool
@@ -113,11 +117,24 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/*.5*
 
 %changelog
-* Wed Feb 12 2014 Adam Jackson <ajax@redhat.com> 1.6.0-2.1
-- Mass rebuild
+* Mon Jun 08 2015 Olivier Fourdan <ofourdan@redhat.com> 1.6.3-2
+- Use 64bit sequence number API from libxcb to avoid 32-bit wrap
 
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.6.0-2
-- Mass rebuild 2013-12-27
+* Tue Mar 10 2015 Adam Jackson <ajax@redhat.com> 1.6.3-1
+- libX11 1.6.3
+
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Mon Jun 30 2014 Adam Jackson <ajax@redhat.com> 1.6.2-1
+- libX11 1.6.2 plus a fix for interleaved xcb/xlib usage
+- Use >= for the -common Requires
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Tue Jul 30 2013 Peter Hutterer <peter.hutterer@redhat.com> 1.6.1-1
+- libX11 1.6.1
 
 * Tue Jun 04 2013 Peter Hutterer <peter.hutterer@redhat.com> 1.6.0-1
 - libX11 1.6.0
