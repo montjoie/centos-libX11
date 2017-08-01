@@ -4,8 +4,8 @@
 
 Summary: Core X11 protocol client library
 Name: libX11
-Version: 1.6.3
-Release: 3%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
+Version: 1.6.5
+Release: 1%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.x.org
@@ -15,12 +15,10 @@ Source0:    %{tarball}-%{gitdate}.tar.bz2
 Source1:    make-git-snapshot.sh
 Source2:    commitid
 %else
-Source0: http://xorg.freedesktop.org/archive/individual/lib/%{name}-%{version}.tar.bz2
+Source0: https://xorg.freedesktop.org/archive/individual/lib/%{name}-%{version}.tar.bz2
 %endif
 
 Patch2: dont-forward-keycode-0.patch
-Patch3: libX11-fix-for-Xlib-32-bit-request-number-issues.patch
-Patch4: XKB-fix-XkbGetKeyboardByName-with-Xming-server.patch
 
 BuildRequires: xorg-x11-util-macros >= 1.11
 BuildRequires: pkgconfig(xproto) >= 7.0.15
@@ -54,11 +52,8 @@ X.Org X11 libX11 development package
 %prep
 %setup -q -n %{tarball}-%{?gitdate:%{gitdate}}%{!?gitdate:%{version}}
 %patch2 -p1 -b .dont-forward-keycode-0
-%patch3 -p1 -b .64bit-seqno
-%patch4 -p1 -b .xkb-xming
 
 %build
-# sodding libtool
 autoreconf -v --install --force
 %configure --disable-static
 
@@ -85,20 +80,17 @@ rm -rf $RPM_BUILD_ROOT
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %{_libdir}/libX11.so.6
 %{_libdir}/libX11.so.6.3.0
 %{_libdir}/libX11-xcb.so.1
 %{_libdir}/libX11-xcb.so.1.0.0
 
 %files common
-%defattr(-,root,root,-)
 %doc AUTHORS COPYING README NEWS
 %{_datadir}/X11/locale/
 %{_datadir}/X11/XErrorDB
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/X11/ImUtil.h
 %{_includedir}/X11/XKBlib.h
 %{_includedir}/X11/Xcms.h
@@ -119,11 +111,29 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/*.5*
 
 %changelog
-* Tue Mar 22 2016 Olivier Fourdan <ofourdan@redhat.com> 1.6.3-3
-- Fix XkbGetKeyboardByName issue with Xming server (#1300953)
+* Wed Apr 26 2017 Adam Jackson <ajax@redhat.com> - 1.6.5-1
+- libX11 1.6.5
 
-* Mon Jun 08 2015 Olivier Fourdan <ofourdan@redhat.com> 1.6.3-2
-- Use 64bit sequence number API from libxcb to avoid 32-bit wrap
+* Fri Jan 20 2017 Peter Hutterer <peter.hutterer@redhat.com> 1.6.4-4
+- Actually apply the patch from 1.6.4-3
+
+* Mon Jan 09 2017 Peter Hutterer <peter.hutterer@redhat.com> 1.6.4-3
+- Fix a bug in the memory leak fix from 1.6.4-2
+
+* Thu Jan 05 2017 Peter Hutterer <peter.hutterer@redhat.com> 1.6.4-2
+- Plug a memory leak in XListFonts()
+
+* Wed Oct 05 2016 Adam Jackson <ajax@redhat.com> - 1.6.4-1
+- libX11 1.6.4
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 1.6.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Thu Jan 28 2016 Peter Hutterer <peter.hutterer@redhat.com>
+- Remove unnecessary defattr
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
 * Tue Mar 10 2015 Adam Jackson <ajax@redhat.com> 1.6.3-1
 - libX11 1.6.3
