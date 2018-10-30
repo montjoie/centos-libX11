@@ -5,7 +5,7 @@
 Summary: Core X11 protocol client library
 Name: libX11
 Version: 1.6.5
-Release: 1%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
+Release: 2%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.x.org
@@ -111,6 +111,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/*.5*
 
 %changelog
+* Thu Jul 12 2018 Peter Hutterer <peter.hutterer@redhat.com> 1.6.5-2
+- Rebuild to pick up new xproto keysyms (#1600147)
+
 * Wed Apr 26 2017 Adam Jackson <ajax@redhat.com> - 1.6.5-1
 - libX11 1.6.5
 
