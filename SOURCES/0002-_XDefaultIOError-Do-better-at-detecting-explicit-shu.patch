@@ -1,0 +1,79 @@
+From 5538b3e4ae6dee32c47db9dfc85b07bbe7b90f6c Mon Sep 17 00:00:00 2001
+From: Adam Jackson <ajax@redhat.com>
+Date: Fri, 24 Mar 2017 11:07:36 -0400
+Subject: [PATCH 2/2] _XDefaultIOError: Do better at detecting explicit
+ shutdown
+
+Currently, when the X server crashes or a client is disconnected with
+XKillClient, you get a somewhat confusing error message from libX11
+along the lines of:
+
+XIO:  fatal IO error 11 (Resource temporarily unavailable) on X server ":0"
+      after 98 requests (40 known processed) with 0 events remaining.
+
+What's happening here is the previous recvmsg has thrown EAGAIN, since
+the socket is non-blocking. In this case, check whether the socket has
+any more data to read, and if not treat it like EPIPE.
+
+Signed-off-by: Adam Jackson <ajax@redhat.com>
+---
+ src/XlibInt.c | 29 ++++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/src/XlibInt.c b/src/XlibInt.c
+index 903e47f3..dd39445b 100644
+--- a/src/XlibInt.c
++++ b/src/XlibInt.c
+@@ -50,6 +50,8 @@ from The Open Group.
+ #ifdef XTHREADS
+ #include "locking.h"
+ 
++#include <sys/ioctl.h>
++
+ /* these pointers get initialized by XInitThreads */
+ LockInfoPtr _Xglobal_lock = NULL;
+ void (*_XCreateMutex_fn)(LockInfoPtr) = NULL;
+@@ -1234,6 +1236,21 @@ _XWireToEvent(
+ 	return(True);
+ }
+ 
++static int
++SocketBytesReadable(Display *dpy)
++{
++    int bytes = 0, last_error;
++#ifdef WIN32
++    last_error = WSAGetLastError();
++    ioctlsocket(ConnectionNumber(dpy), FIONREAD, &bytes);
++    WSASetLastError(last_error);
++#else
++    last_error = errno;
++    ioctl(ConnectionNumber(dpy), FIONREAD, &bytes);
++    errno = last_error;
++#endif
++    return bytes;
++}
+ 
+ /*
+  * _XDefaultIOError - Default fatal system error reporting routine.  Called
+@@ -1242,7 +1259,17 @@ _XWireToEvent(
+ _X_NORETURN int _XDefaultIOError(
+ 	Display *dpy)
+ {
+-	if (ECHECK(EPIPE)) {
++	int killed = ECHECK(EPIPE);
++
++	/*
++	 * If the socket was closed on the far end, the final recvmsg in
++	 * xcb will have thrown EAGAIN because we're non-blocking. Detect
++	 * this to get the more informative error message.
++	 */
++	if (ECHECK(EAGAIN) && SocketBytesReadable(dpy) <= 0)
++	    killed = True;
++
++	if (killed) {
+ 	    fprintf (stderr,
+                      "X connection to %s broken (explicit kill or server shutdown).\r\n",
+                      DisplayString (dpy));
+-- 
+2.21.0
+

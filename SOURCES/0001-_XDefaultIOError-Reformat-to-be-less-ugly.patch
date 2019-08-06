@@ -1,0 +1,56 @@
+From 6d2cde9633b5ee020cb60caea1cf61e090b86dd2 Mon Sep 17 00:00:00 2001
+From: Adam Jackson <ajax@redhat.com>
+Date: Fri, 24 Mar 2017 11:07:35 -0400
+Subject: [PATCH 1/2] _XDefaultIOError: Reformat to be less ugly
+
+Signed-off-by: Adam Jackson <ajax@redhat.com>
+Reviewed-by: Alan Coopersmith <alan.coopersmith@oracle.com>
+---
+ src/XlibInt.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/src/XlibInt.c b/src/XlibInt.c
+index 73afe024..903e47f3 100644
+--- a/src/XlibInt.c
++++ b/src/XlibInt.c
+@@ -1243,24 +1243,24 @@ _X_NORETURN int _XDefaultIOError(
+ 	Display *dpy)
+ {
+ 	if (ECHECK(EPIPE)) {
+-	    (void) fprintf (stderr,
+-	"X connection to %s broken (explicit kill or server shutdown).\r\n",
+-			    DisplayString (dpy));
++	    fprintf (stderr,
++                     "X connection to %s broken (explicit kill or server shutdown).\r\n",
++                     DisplayString (dpy));
+ 	} else {
+-	    (void) fprintf (stderr,
+-			"XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
++            fprintf (stderr,
++                     "XIO:  fatal IO error %d (%s) on X server \"%s\"\r\n",
+ #ifdef WIN32
+-			WSAGetLastError(), strerror(WSAGetLastError()),
++                      WSAGetLastError(), strerror(WSAGetLastError()),
+ #else
+-			errno, strerror (errno),
++                      errno, strerror (errno),
+ #endif
+-			DisplayString (dpy));
+-	    (void) fprintf (stderr,
+-	 "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
+-			NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy),
+-			QLength(dpy));
++                      DisplayString (dpy));
++	    fprintf (stderr,
++		     "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
++		     NextRequest(dpy) - 1, LastKnownRequestProcessed(dpy),
++		     QLength(dpy));
++        }
+ 
+-	}
+ 	exit(1);
+ 	/*NOTREACHED*/
+ }
+-- 
+2.21.0
+
