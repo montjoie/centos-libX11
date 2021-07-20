@@ -5,7 +5,7 @@
 Summary: Core X11 protocol client library
 Name: libX11
 Version: 1.6.7
-Release: 3%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
+Release: 4%{?gitdate:.%{gitdate}git%{gitversion}}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.x.org
@@ -24,6 +24,16 @@ Patch4: 0002-_XDefaultIOError-Do-better-at-detecting-explicit-shu.patch
 
 # CVE-2020-14363
 Patch5: 0001-Fix-an-integer-overflow-in-init_om.patch
+# dependency for CVE-2021-31535, the original patch is bigger, I keep only changes on files touched by CVE-2021-31535 fixes.
+# Anyway it is "just" a warning/cast patch and lot of changes are removed latter by CVE-2021-31535 fixes.
+# Backporting it permit to keep next patchs unmodified.
+Patch6: 0001-reduce-gcc-normal-warnings-using-casts-no-object-cha.patch
+# CVE-2021-31535
+Patch7: 0001-Reject-string-longer-than-USHRT_MAX-before-sending-t.patch
+# CVE-2021-31535 Follow-up fixes from 1.7.2
+Patch8: 0001-include-limits.h-always-not-if-HAVE_CONFIG_H-is-set.patch
+Patch9: 0002-Check-for-NULL-strings-before-getting-their-lengths.patch
+Patch10: 0003-Protect-against-overly-long-strings.patch
 
 BuildRequires: xorg-x11-util-macros >= 1.11
 BuildRequires: pkgconfig(xproto) >= 7.0.15
@@ -60,6 +70,11 @@ X.Org X11 libX11 development package
 %patch3 -p1 -b .reformat
 %patch4 -p1 -b .shutdown
 %patch5 -p1 -b .fix-an-integer-overflow-in-init_om
+%patch6 -p1 -b .reduce-gcc-normal-warnings-using-casts-no-object-cha
+%patch7 -p1 -b .Reject-string-longer-than-USHRT_MAX-before-sending-t
+%patch8 -p1 -b .include-limits.h-always-not-if-HAVE_CONFIG_H-is-set
+%patch9 -p1 -b .Check-for-NULL-strings-before-getting-their-lengths
+%patch10 -p1 -b .Protect-against-overly-long-strings
 
 %build
 autoreconf -v --install --force
@@ -119,6 +134,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/*.5*
 
 %changelog
+* Tue Jul 20 2021 Corentin Labbe <clabbe@baylibre.com> - 1.6.7-4
+- Fix CVE-2021-31535 (partial fix from 1.7.1 + 3 follow-up fixes from 1.7.2)
+
 * Thu Oct 29 2020 Michel Dänzer <mdaenzer@redhat.com> - 1.6.7-3
 - Fix CVE-2020-14363 (#1873922)
 

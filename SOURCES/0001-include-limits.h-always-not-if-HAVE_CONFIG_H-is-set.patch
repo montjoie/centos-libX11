@@ -1,0 +1,29 @@
+From a8216e8653a246db664e1443ecf707b27de65067 Mon Sep 17 00:00:00 2001
+From: Matthieu Herrb <matthieu@herrb.eu>
+Date: Sat, 22 May 2021 17:35:47 +0200
+Subject: [PATCH 1/3] include <limits.h> always, not if HAVE_CONFIG_H is set.
+
+via Matthew Green from the NetBSD project
+
+Signed-off-by: Matthieu Herrb <matthieu@herrb.eu>
+---
+ src/SetFPath.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/SetFPath.c b/src/SetFPath.c
+index 13fce49e..b60498df 100644
+--- a/src/SetFPath.c
++++ b/src/SetFPath.c
+@@ -26,8 +26,8 @@ in this Software without prior written authorization from The Open Group.
+ 
+ #ifdef HAVE_CONFIG_H
+ #include <config.h>
+-#include <limits.h>
+ #endif
++#include <limits.h>
+ #include "Xlibint.h"
+ 
+ #define safestrlen(s) ((s) ? strlen(s) : 0)
+-- 
+2.25.1
+

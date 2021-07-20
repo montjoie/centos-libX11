@@ -1,0 +1,163 @@
+From ab2f59530b16bdfbf023b8e025c7c8aba3b6fd0c Mon Sep 17 00:00:00 2001
+From: Matthieu Herrb <matthieu@herrb.eu>
+Date: Sun, 30 May 2021 16:33:48 +0200
+Subject: [PATCH 2/3] Check for NULL strings before getting their lengths
+
+Problem reported by Karsten Trulsen
+
+Signed-off-by: Matthieu Herrb <matthieu@herrb.eu>
+---
+ src/Font.c      | 2 +-
+ src/FontInfo.c  | 2 +-
+ src/FontNames.c | 2 +-
+ src/GetColor.c  | 2 +-
+ src/LoadFont.c  | 2 +-
+ src/LookupCol.c | 2 ++
+ src/ParseCol.c  | 2 +-
+ src/QuExt.c     | 2 +-
+ src/StNColor.c  | 2 +-
+ src/StName.c    | 4 ++--
+ 10 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/src/Font.c b/src/Font.c
+index 1cd89cca..d4314e26 100644
+--- a/src/Font.c
++++ b/src/Font.c
+@@ -102,7 +102,7 @@ XFontStruct *XLoadQueryFont(
+     XF86BigfontCodes *extcodes = _XF86BigfontCodes(dpy);
+ #endif
+ 
+-    if (strlen(name) >= USHRT_MAX)
++    if (name != NULL && strlen(name) >= USHRT_MAX)
+         return NULL;
+     if (_XF86LoadQueryLocaleFont(dpy, name, &font_result, (Font *)0))
+       return font_result;
+diff --git a/src/FontInfo.c b/src/FontInfo.c
+index 6644b3fa..0e4ae097 100644
+--- a/src/FontInfo.c
++++ b/src/FontInfo.c
+@@ -58,7 +58,7 @@ XFontStruct **info)	/* RETURN */
+     register xListFontsReq *req;
+     int j;
+ 
+-    if (strlen(pattern) >= USHRT_MAX)
++    if (pattern != NULL && strlen(pattern) >= USHRT_MAX)
+         return NULL;
+ 
+     LockDisplay(dpy);
+diff --git a/src/FontNames.c b/src/FontNames.c
+index 458d80c9..31c2e064 100644
+--- a/src/FontNames.c
++++ b/src/FontNames.c
+@@ -51,7 +51,7 @@ int *actualCount)	/* RETURN */
+     register xListFontsReq *req;
+     unsigned long rlen = 0;
+ 
+-    if (strlen(pattern) >= USHRT_MAX)
++    if (pattern != NULL && strlen(pattern) >= USHRT_MAX)
+         return NULL;
+ 
+     LockDisplay(dpy);
+diff --git a/src/GetColor.c b/src/GetColor.c
+index c8178067..f38dea9c 100644
+--- a/src/GetColor.c
++++ b/src/GetColor.c
+@@ -49,7 +49,7 @@ XColor *exact_def) /* RETURN */
+     XcmsColor cmsColor_exact;
+     Status ret;
+ 
+-    if (strlen(colorname) >= USHRT_MAX)
++    if (colorname != NULL && strlen(colorname) >= USHRT_MAX)
+         return (0);
+ 
+ #ifdef XCMS
+diff --git a/src/LoadFont.c b/src/LoadFont.c
+index 3996436f..2a18e52c 100644
+--- a/src/LoadFont.c
++++ b/src/LoadFont.c
+@@ -39,7 +39,7 @@ XLoadFont (
+     Font fid;
+     register xOpenFontReq *req;
+ 
+-    if (strlen(name) >= USHRT_MAX)
++    if (name != NULL && strlen(name) >= USHRT_MAX)
+         return (0);
+ 
+     if (_XF86LoadQueryLocaleFont(dpy, name, (XFontStruct **)0, &fid))
+diff --git a/src/LookupCol.c b/src/LookupCol.c
+index cd9b1368..5df09fb4 100644
+--- a/src/LookupCol.c
++++ b/src/LookupCol.c
+@@ -47,6 +47,8 @@ XLookupColor (
+ 	XcmsCCC ccc;
+ 	XcmsColor cmsColor_exact;
+ 
++	if (spec == NULL)
++		return 0;
+ 	n = (int) strlen (spec);
+ 	if (n >= USHRT_MAX)
+             return 0;
+diff --git a/src/ParseCol.c b/src/ParseCol.c
+index 7a84a17b..ff5a264e 100644
+--- a/src/ParseCol.c
++++ b/src/ParseCol.c
+@@ -46,7 +46,7 @@ XParseColor (
+ 	XcmsCCC ccc;
+ 	XcmsColor cmsColor;
+ 
+-        if (!spec) return(0);
++	if (!spec) return(0);
+ 	n = (int) strlen (spec);
+ 	if (n >= USHRT_MAX)
+             return(0);
+diff --git a/src/QuExt.c b/src/QuExt.c
+index 4cb99fcf..68c17466 100644
+--- a/src/QuExt.c
++++ b/src/QuExt.c
+@@ -42,7 +42,7 @@ XQueryExtension(
+     xQueryExtensionReply rep;
+     register xQueryExtensionReq *req;
+ 
+-    if (strlen(name) >= USHRT_MAX)
++    if (name != NULL && strlen(name) >= USHRT_MAX)
+         return false;
+ 
+     LockDisplay(dpy);
+diff --git a/src/StNColor.c b/src/StNColor.c
+index 16dc9cbc..743fd4ed 100644
+--- a/src/StNColor.c
++++ b/src/StNColor.c
+@@ -47,7 +47,7 @@ int flags)  /* DoRed, DoGreen, DoBlue */
+     XcmsColor cmsColor_exact;
+     XColor scr_def;
+ 
+-    if (strlen(name) >= USHRT_MAX)
++    if (name != NULL && strlen(name) >= USHRT_MAX)
+         return 0;
+ #ifdef XCMS
+     /*
+diff --git a/src/StName.c b/src/StName.c
+index 04bb3aa6..fd8af6fb 100644
+--- a/src/StName.c
++++ b/src/StName.c
+@@ -37,7 +37,7 @@ XStoreName (
+     Window w,
+     _Xconst char *name)
+ {
+-    if (strlen(name) >= USHRT_MAX)
++    if (name != NULL && strlen(name) >= USHRT_MAX)
+         return 0;
+     return XChangeProperty(dpy, w, XA_WM_NAME, XA_STRING, /*  */
+ 			   8, PropModeReplace, (_Xconst unsigned char *)name,
+@@ -50,7 +50,7 @@ XSetIconName (
+     Window w,
+     _Xconst char *icon_name)
+ {
+-    if (strlen(icon_name) >= USHRT_MAX)
++    if (icon_name != NULL && strlen(icon_name) >= USHRT_MAX)
+         return 0;
+     return XChangeProperty(dpy, w, XA_WM_ICON_NAME, XA_STRING, 8,
+                            PropModeReplace, (_Xconst unsigned char *)icon_name,
+-- 
+2.25.1
+
