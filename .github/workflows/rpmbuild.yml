@@ -1,0 +1,8 @@
+name: rpmbuild
+on: [push]
+jobs:
+  rpmbuild:
+    runs-on: [self-hosted, centos7]
+    steps:
+      - uses: actions/checkout@v2
+      - run: /gh-runner/build.sh
